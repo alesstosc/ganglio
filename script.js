@@ -55,6 +55,22 @@ function renderArticles() {
 }
 
 // Gestione del form per nuovi articoli
+// Aggiungi questa funzione per eliminare articoli vecchi
+function deleteOldArticles(daysThreshold = 30) {
+    const now = new Date();
+    const thresholdDate = new Date(now.setDate(now.getDate() - daysThreshold));
+    
+    articlesDB = articlesDB.filter(article => {
+        if (!article.createdAt) return true; // Mantieni articoli senza data
+        const articleDate = new Date(article.createdAt);
+        return articleDate > thresholdDate;
+    });
+    
+    saveArticles();
+    renderArticles();
+}
+
+// Modifica la funzione saveArticle per aggiungere la data di creazione
 document.getElementById('saveArticle').addEventListener('click', () => {
     const title = document.getElementById('articleTitle').value;
     const content = document.getElementById('articleContent').value;
@@ -66,7 +82,11 @@ document.getElementById('saveArticle').addEventListener('click', () => {
         return;
     }
     
-    const newArticle = { title, content };
+    const newArticle = { 
+        title, 
+        content,
+        createdAt: new Date().toISOString() // Aggiungi timestamp
+    };
     
     if (imageUrl) {
         newArticle.imageUrl = imageUrl;
@@ -162,7 +182,26 @@ function addExportButtons() {
 }
 
 // Modifica l'inizializzazione per includere i nuovi pulsanti
+// Aggiungi pulsante per pulizia articoli
+function addCleanupButton() {
+    const container = document.querySelector('.container');
+    
+    const cleanupBtn = document.createElement('button');
+    cleanupBtn.className = 'btn btn-warning mt-2 ms-2';
+    cleanupBtn.textContent = 'Pulisci Articoli Obsoleti';
+    cleanupBtn.onclick = () => {
+        if (confirm('Eliminare gli articoli più vecchi di 30 giorni?')) {
+            deleteOldArticles();
+        }
+    };
+    
+    const btnGroup = document.querySelector('.d-flex');
+    btnGroup.appendChild(cleanupBtn);
+}
+
+// Modifica l'inizializzazione
 document.addEventListener('DOMContentLoaded', () => {
     loadArticles();
     addExportButtons();
+    addCleanupButton();
 });
