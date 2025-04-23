@@ -200,8 +200,55 @@ function addCleanupButton() {
 }
 
 // Modifica l'inizializzazione
+function addAdminButton() {
+    const container = document.querySelector('.container');
+    
+    const adminBtn = document.createElement('button');
+    adminBtn.className = 'btn btn-dark mt-2 ms-2';
+    adminBtn.textContent = 'Amministrazione';
+    adminBtn.onclick = () => {
+        document.getElementById('articles-container').style.display = 'none';
+        document.getElementById('admin-articles-container').style.display = 'block';
+        renderAdminArticles();
+    };
+    
+    const btnGroup = document.querySelector('.d-flex');
+    btnGroup.appendChild(adminBtn);
+}
+
+// Chiamare questa funzione all'inizializzazione
 document.addEventListener('DOMContentLoaded', () => {
     loadArticles();
     addExportButtons();
     addCleanupButton();
+    addAdminButton(); // Aggiungi questa linea
 });
+
+
+function deleteArticle(articleId) {
+    articlesDB = articlesDB.filter((article, index) => index !== articleId);
+    saveArticles();
+    renderArticles();
+}
+
+function renderAdminArticles() {
+    const container = document.getElementById('admin-articles-container');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    articlesDB.forEach((article, index) => {
+        const articleDiv = document.createElement('div');
+        articleDiv.className = 'card mb-3';
+        
+        articleDiv.innerHTML = `
+            <div class="card-body">
+                <h5 class="card-title">${article.title}</h5>
+                <p class="card-text">${article.content}</p>
+                <button onclick="deleteArticle(${index})" class="btn btn-danger">Elimina</button>
+            </div>
+        `;
+        
+        container.appendChild(articleDiv);
+    });
+}
