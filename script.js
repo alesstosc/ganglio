@@ -93,3 +93,76 @@ document.getElementById('saveArticle').addEventListener('click', () => {
 
 // Inizializzazione
 document.addEventListener('DOMContentLoaded', loadArticles);
+
+
+// Nuove funzioni per gestire il backup su file
+function exportToJSON() {
+    const dataStr = JSON.stringify(articlesDB);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = 'giornalino_backup.json';
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+}
+
+function importFromJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            if (Array.isArray(importedData)) {
+                articlesDB = importedData;
+                saveArticles();
+                renderArticles();
+                alert('Database importato con successo!');
+            } else {
+                alert('Il file non contiene un database valido');
+            }
+        } catch (error) {
+            alert('Errore durante la lettura del file: ' + error.message);
+        }
+    };
+    reader.readAsText(file);
+}
+
+// Aggiungi pulsanti di import/export all'interfaccia
+function addExportButtons() {
+    const container = document.querySelector('.container');
+    
+    const btnGroup = document.createElement('div');
+    btnGroup.className = 'd-flex gap-2 mt-3';
+    
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'btn btn-success';
+    exportBtn.textContent = 'Esporta Database';
+    exportBtn.onclick = exportToJSON;
+    
+    const importBtn = document.createElement('button');
+    importBtn.className = 'btn btn-info';
+    importBtn.textContent = 'Importa Database';
+    
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.json';
+    fileInput.style.display = 'none';
+    fileInput.onchange = importFromJSON;
+    
+    importBtn.onclick = () => fileInput.click();
+    
+    btnGroup.appendChild(exportBtn);
+    btnGroup.appendChild(importBtn);
+    btnGroup.appendChild(fileInput);
+    container.appendChild(btnGroup);
+}
+
+// Modifica l'inizializzazione per includere i nuovi pulsanti
+document.addEventListener('DOMContentLoaded', () => {
+    loadArticles();
+    addExportButtons();
+});
